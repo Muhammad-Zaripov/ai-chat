@@ -77,10 +77,14 @@ jobs:
             docker pull ghcr.io/muhammad-zaripov/ai-chat:latest
 
             echo "Starting new container..."
+            # Attach to the /tools/ai-chat compose network so the app
+            # can reach the postgres container by hostname `db`.
+            # Bind app to 127.0.0.1 only; expose publicly via reverse proxy.
             docker run -d \
               --restart always \
               --name ai-chat \
-              -p ${HTTP_PORT}:8080 \
+              --network ai-chat_default \
+              -p 127.0.0.1:${HTTP_PORT}:8080 \
               --env-file ~/ai-chat/.env \
               ghcr.io/muhammad-zaripov/ai-chat:latest
 
