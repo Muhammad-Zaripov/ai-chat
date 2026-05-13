@@ -17,10 +17,10 @@ COPY --from=build /out/server /app/server
 RUN adduser -D -u 10001 app
 USER app
 
-EXPOSE 8080
-ENV HTTP_PORT=8080
+EXPOSE 7475
+ENV HTTP_PORT=7475
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-    CMD wget -qO- http://127.0.0.1:8080/healthz || exit 1
+    CMD wget -qO- http://127.0.0.1:7475/healthz || exit 1
 
 ENTRYPOINT ["/app/server"]

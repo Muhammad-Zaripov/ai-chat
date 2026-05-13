@@ -84,7 +84,7 @@ jobs:
               --restart always \
               --name ai-chat \
               --network ai-chat_default \
-              -p 127.0.0.1:${HTTP_PORT}:8080 \
+              -p 127.0.0.1:${HTTP_PORT}:${HTTP_PORT} \
               --env-file ~/ai-chat/.env \
               ghcr.io/muhammad-zaripov/ai-chat:latest
 
