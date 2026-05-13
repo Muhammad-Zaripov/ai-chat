@@ -1,0 +1,91 @@
+# Build + deploy pipeline:
+# push to main → GHCR build → SSH deploy.
+#
+# Required GitHub secrets:
+#   GHCR_TOKEN       PAT with write:packages, read:packages
+#   SSH_HOST         deployment server host
+#   SSH_USER         ssh user
+#   SSH_PORT         ssh port
+#   SSH_PRIVATE_KEY  ssh private key contents
+#   HTTP_PORT        e.g. 8080
+#   POSTGRES_URL     postgres connection string
+
+name: Build and Deploy AI Chat
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build Docker image
+        run: |
+          docker build --no-cache \
+            -t ghcr.io/muhammad-zaripov/ai-chat:latest .
+
+      - name: Push Docker image
+        run: docker push ghcr.io/muhammad-zaripov/ai-chat:latest
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script_stop: true
+          envs: HTTP_PORT,POSTGRES_URL,GHCR_TOKEN
+          script: |
+            set -e
+
+            echo "Logging in to GHCR..."
+            echo "$GHCR_TOKEN" | docker login ghcr.io -u muhammad-zaripov --password-stdin
+
+            echo "Writing .env file..."
+            mkdir -p ~/ai-chat
+            cat > ~/ai-chat/.env << EOF
+            HTTP_PORT=$HTTP_PORT
+            POSTGRES_URL=$POSTGRES_URL
+            EOF
+            chmod 600 ~/ai-chat/.env
+
+            echo "Stopping old container (if exists)..."
+            docker stop ai-chat || true
+            docker rm ai-chat || true
+
+            echo "Removing old image..."
+            docker rmi ghcr.io/muhammad-zaripov/ai-chat:latest || true
+
+            echo "Pulling latest image..."
+            docker pull ghcr.io/muhammad-zaripov/ai-chat:latest
+
+            echo "Starting new container..."
+            docker run -d \
+              --restart always \
+              --name ai-chat \
+              -p ${HTTP_PORT}:8080 \
+              --env-file ~/ai-chat/.env \
+              ghcr.io/muhammad-zaripov/ai-chat:latest
+
+            echo "Deployment successful!"
+        env:
+          HTTP_PORT: ${{ secrets.HTTP_PORT }}
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
