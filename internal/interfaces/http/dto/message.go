@@ -19,6 +19,14 @@ type UpdateMessageRequest struct {
 	Message json.RawMessage `json:"message" binding:"required"`
 }
 
+type ErrorResponse struct {
+	Error string `json:"error"`
+}
+
+type ListMessagesResponse struct {
+	Items []MessageResponse `json:"items"`
+}
+
 type MessageResponse struct {
 	ID        uuid.UUID       `json:"id"`
 	ChatID    uuid.UUID       `json:"chat_id"`

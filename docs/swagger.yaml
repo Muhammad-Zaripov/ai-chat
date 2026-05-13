@@ -1,0 +1,221 @@
+basePath: /
+definitions:
+  github_com_udevs_ai-chat_internal_interfaces_http_dto.CreateMessageRequest:
+    properties:
+      chat_id:
+        type: string
+      message:
+        items:
+          type: integer
+        type: array
+      sender_id:
+        type: string
+    required:
+    - chat_id
+    - message
+    - sender_id
+    type: object
+  github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  github_com_udevs_ai-chat_internal_interfaces_http_dto.ListMessagesResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.MessageResponse'
+        type: array
+    type: object
+  github_com_udevs_ai-chat_internal_interfaces_http_dto.MessageResponse:
+    properties:
+      chat_id:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      message:
+        items:
+          type: integer
+        type: array
+      sender_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  github_com_udevs_ai-chat_internal_interfaces_http_dto.UpdateMessageRequest:
+    properties:
+      message:
+        items:
+          type: integer
+        type: array
+    required:
+    - message
+    type: object
+host: ai-chat.leetcoders.uz
+info:
+  contact: {}
+  description: CRUD for chat messages (chat_id, sender_id, jsonb body).
+  title: AI Chat API
+  version: "1.0"
+paths:
+  /v1/messages:
+    get:
+      parameters:
+      - description: Chat ID (UUID)
+        in: query
+        name: chat_id
+        required: true
+        type: string
+      - description: Page size (1-200, default 50)
+        in: query
+        name: limit
+        type: integer
+      - description: Page offset (default 0)
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ListMessagesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse'
+      summary: List messages for a chat
+      tags:
+      - messages
+    post:
+      consumes:
+      - application/json
+      description: Stores a new chat message. `message` is an arbitrary JSON object.
+      parameters:
+      - description: Message to create
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.CreateMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse'
+      summary: Create a message
+      tags:
+      - messages
+  /v1/messages/{id}:
+    delete:
+      parameters:
+      - description: Message ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse'
+      summary: Delete a message
+      tags:
+      - messages
+    get:
+      parameters:
+      - description: Message ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse'
+      summary: Get a message by id
+      tags:
+      - messages
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Message ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: New message body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.UpdateMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse'
+      summary: Update a message body
+      tags:
+      - messages
+schemes:
+- https
+- http
+swagger: "2.0"

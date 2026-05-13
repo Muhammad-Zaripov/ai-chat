@@ -1,3 +1,9 @@
+// @title           AI Chat API
+// @version         1.0
+// @description     CRUD for chat messages (chat_id, sender_id, jsonb body).
+// @host            ai-chat.leetcoders.uz
+// @schemes         https http
+// @BasePath        /
 package main
 
 import (
@@ -10,6 +16,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	_ "github.com/udevs/ai-chat/docs"
 	appmsg "github.com/udevs/ai-chat/internal/application/message"
 	"github.com/udevs/ai-chat/internal/infrastructure/config"
 	"github.com/udevs/ai-chat/internal/infrastructure/postgres"
