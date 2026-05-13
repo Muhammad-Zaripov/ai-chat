@@ -1,6 +1,11 @@
 package config
 
-import "github.com/kelseyhightower/envconfig"
+import (
+	"errors"
+	"strings"
+
+	"github.com/kelseyhightower/envconfig"
+)
 
 type Config struct {
 	HTTPPort     string `envconfig:"HTTP_PORT" default:"8080"`
@@ -13,6 +18,17 @@ func Load() (Config, error) {
 	var c Config
 	if err := envconfig.Process("", &c); err != nil {
 		return Config{}, err
+	}
+	// envconfig's `required` only checks presence, not emptiness;
+	// an `FOO=` line counts as "set". Treat empty as missing.
+	if strings.TrimSpace(c.PostgresURL) == "" {
+		return Config{}, errors.New("config: POSTGRES_URL is required and must be non-empty")
+	}
+	if strings.TrimSpace(c.OpenAIAPIKey) == "" {
+		return Config{}, errors.New("config: OPENAI_API_KEY is required and must be non-empty")
+	}
+	if strings.TrimSpace(c.OpenAIModel) == "" {
+		c.OpenAIModel = "gpt-4o-mini"
 	}
 	return c, nil
 }

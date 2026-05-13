@@ -60,12 +60,11 @@ jobs:
 
             echo "Writing .env file..."
             mkdir -p ~/ai-chat
-            cat > ~/ai-chat/.env << EOF
-            HTTP_PORT=$HTTP_PORT
-            POSTGRES_URL=$POSTGRES_URL
-            OPENAI_API_KEY=$OPENAI_API_KEY
-            OPENAI_MODEL=$OPENAI_MODEL
-            EOF
+            : > ~/ai-chat/.env
+            [ -n "$HTTP_PORT" ]       && echo "HTTP_PORT=$HTTP_PORT"             >> ~/ai-chat/.env
+            [ -n "$POSTGRES_URL" ]    && echo "POSTGRES_URL=$POSTGRES_URL"       >> ~/ai-chat/.env
+            [ -n "$OPENAI_API_KEY" ]  && echo "OPENAI_API_KEY=$OPENAI_API_KEY"   >> ~/ai-chat/.env
+            [ -n "$OPENAI_MODEL" ]    && echo "OPENAI_MODEL=$OPENAI_MODEL"       >> ~/ai-chat/.env
             chmod 600 ~/ai-chat/.env
 
             echo "Stopping old container (if exists)..."
