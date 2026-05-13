@@ -51,7 +51,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script_stop: true
-          envs: HTTP_PORT,POSTGRES_URL,GHCR_TOKEN
+          envs: HTTP_PORT,POSTGRES_URL,OPENAI_API_KEY,OPENAI_MODEL,GHCR_TOKEN
           script: |
             set -e
 
@@ -63,6 +63,8 @@ jobs:
             cat > ~/ai-chat/.env << EOF
             HTTP_PORT=$HTTP_PORT
             POSTGRES_URL=$POSTGRES_URL
+            OPENAI_API_KEY=$OPENAI_API_KEY
+            OPENAI_MODEL=$OPENAI_MODEL
             EOF
             chmod 600 ~/ai-chat/.env
 
@@ -92,4 +94,6 @@ jobs:
         env:
           HTTP_PORT: ${{ secrets.HTTP_PORT }}
           POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}

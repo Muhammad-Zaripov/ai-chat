@@ -15,6 +15,163 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/v1/chats": {
+            "post": {
+                "description": "Allocates a chat with its own conversation state (server-side, via OpenAI Responses API).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "chats"
+                ],
+                "summary": "Create a new chat session",
+                "parameters": [
+                    {
+                        "description": "Chat options",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.CreateChatRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ChatResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/chats/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "chats"
+                ],
+                "summary": "Get a chat by id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Chat ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ChatResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/chats/{id}/messages": {
+            "post": {
+                "description": "Appends a user turn to the chat. The previous response_id is sent to OpenAI so the model has full conversation context.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "chats"
+                ],
+                "summary": "Send a message and get the AI's reply",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Chat ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "User message",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.SendMessageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.SendMessageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/messages": {
             "get": {
                 "produces": [
@@ -253,6 +410,41 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "github_com_udevs_ai-chat_internal_interfaces_http_dto.ChatResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "last_response_id": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_udevs_ai-chat_internal_interfaces_http_dto.CreateChatRequest": {
+            "type": "object",
+            "properties": {
+                "model": {
+                    "type": "string",
+                    "example": "gpt-4o-mini"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
         "github_com_udevs_ai-chat_internal_interfaces_http_dto.CreateMessageRequest": {
             "type": "object",
             "required": [
@@ -320,6 +512,29 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_udevs_ai-chat_internal_interfaces_http_dto.SendMessageRequest": {
+            "type": "object",
+            "required": [
+                "input"
+            ],
+            "properties": {
+                "input": {
+                    "type": "string",
+                    "example": "hello, who are you?"
+                }
+            }
+        },
+        "github_com_udevs_ai-chat_internal_interfaces_http_dto.SendMessageResponse": {
+            "type": "object",
+            "properties": {
+                "chat": {
+                    "$ref": "#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ChatResponse"
+                },
+                "reply": {
+                    "type": "string"
+                }
+            }
+        },
         "github_com_udevs_ai-chat_internal_interfaces_http_dto.UpdateMessageRequest": {
             "type": "object",
             "required": [
@@ -344,7 +559,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/",
 	Schemes:          []string{"https", "http"},
 	Title:            "AI Chat API",
-	Description:      "CRUD for chat messages (chat_id, sender_id, jsonb body).",
+	Description:      "Chat backend: CRUD for messages plus AI chat sessions powered by the OpenAI Responses API.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

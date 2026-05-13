@@ -18,3 +18,12 @@ type Message struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
+
+type Chat struct {
+	ID             uuid.UUID
+	Title          *string
+	Model          string
+	LastResponseID *string
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+}

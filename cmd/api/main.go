@@ -1,6 +1,6 @@
 // @title           AI Chat API
 // @version         1.0
-// @description     CRUD for chat messages (chat_id, sender_id, jsonb body).
+// @description     Chat backend: CRUD for messages plus AI chat sessions powered by the OpenAI Responses API.
 // @host            ai-chat.leetcoders.uz
 // @schemes         https http
 // @BasePath        /
@@ -17,8 +17,10 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	_ "github.com/udevs/ai-chat/docs"
+	appchat "github.com/udevs/ai-chat/internal/application/chat"
 	appmsg "github.com/udevs/ai-chat/internal/application/message"
 	"github.com/udevs/ai-chat/internal/infrastructure/config"
+	"github.com/udevs/ai-chat/internal/infrastructure/openai"
 	"github.com/udevs/ai-chat/internal/infrastructure/postgres"
 	"github.com/udevs/ai-chat/internal/interfaces/http/handler"
 	"github.com/udevs/ai-chat/internal/interfaces/http/router"
@@ -43,10 +45,16 @@ func main() {
 		log.Fatalf("postgres ping: %v", err)
 	}
 
-	repo := postgres.NewMessageRepository(pool)
-	svc := appmsg.NewService(repo)
-	h := handler.NewMessageHandler(svc)
-	r := router.New(h)
+	msgRepo := postgres.NewMessageRepository(pool)
+	msgSvc := appmsg.NewService(msgRepo)
+	msgHandler := handler.NewMessageHandler(msgSvc)
+
+	chatRepo := postgres.NewChatRepository(pool)
+	aiClient := openai.New(cfg.OpenAIAPIKey)
+	chatSvc := appchat.NewService(chatRepo, aiClient, cfg.OpenAIModel)
+	chatHandler := handler.NewChatHandler(chatSvc)
+
+	r := router.New(msgHandler, chatHandler)
 
 	srv := &http.Server{
 		Addr:              ":" + cfg.HTTPPort,

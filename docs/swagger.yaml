@@ -1,5 +1,28 @@
 basePath: /
 definitions:
+  github_com_udevs_ai-chat_internal_interfaces_http_dto.ChatResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      last_response_id:
+        type: string
+      model:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  github_com_udevs_ai-chat_internal_interfaces_http_dto.CreateChatRequest:
+    properties:
+      model:
+        example: gpt-4o-mini
+        type: string
+      title:
+        type: string
+    type: object
   github_com_udevs_ai-chat_internal_interfaces_http_dto.CreateMessageRequest:
     properties:
       chat_id:
@@ -44,6 +67,21 @@ definitions:
       updated_at:
         type: string
     type: object
+  github_com_udevs_ai-chat_internal_interfaces_http_dto.SendMessageRequest:
+    properties:
+      input:
+        example: hello, who are you?
+        type: string
+    required:
+    - input
+    type: object
+  github_com_udevs_ai-chat_internal_interfaces_http_dto.SendMessageResponse:
+    properties:
+      chat:
+        $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ChatResponse'
+      reply:
+        type: string
+    type: object
   github_com_udevs_ai-chat_internal_interfaces_http_dto.UpdateMessageRequest:
     properties:
       message:
@@ -56,10 +94,116 @@ definitions:
 host: ai-chat.leetcoders.uz
 info:
   contact: {}
-  description: CRUD for chat messages (chat_id, sender_id, jsonb body).
+  description: 'Chat backend: CRUD for messages plus AI chat sessions powered by the
+    OpenAI Responses API.'
   title: AI Chat API
   version: "1.0"
 paths:
+  /v1/chats:
+    post:
+      consumes:
+      - application/json
+      description: Allocates a chat with its own conversation state (server-side,
+        via OpenAI Responses API).
+      parameters:
+      - description: Chat options
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.CreateChatRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ChatResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse'
+      summary: Create a new chat session
+      tags:
+      - chats
+  /v1/chats/{id}:
+    get:
+      parameters:
+      - description: Chat ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ChatResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse'
+      summary: Get a chat by id
+      tags:
+      - chats
+  /v1/chats/{id}/messages:
+    post:
+      consumes:
+      - application/json
+      description: Appends a user turn to the chat. The previous response_id is sent
+        to OpenAI so the model has full conversation context.
+      parameters:
+      - description: Chat ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: User message
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.SendMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.SendMessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse'
+      summary: Send a message and get the AI's reply
+      tags:
+      - chats
   /v1/messages:
     get:
       parameters:

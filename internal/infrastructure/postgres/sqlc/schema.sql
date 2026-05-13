@@ -6,3 +6,12 @@ CREATE TABLE messages (
     created_at  TIMESTAMPTZ NOT NULL,
     updated_at  TIMESTAMPTZ NOT NULL
 );
+
+CREATE TABLE chats (
+    id                UUID PRIMARY KEY,
+    title             TEXT,
+    model             TEXT        NOT NULL,
+    last_response_id  TEXT,
+    created_at        TIMESTAMPTZ NOT NULL,
+    updated_at        TIMESTAMPTZ NOT NULL
+);
