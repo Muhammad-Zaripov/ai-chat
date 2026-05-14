@@ -35,9 +35,22 @@ type Repository interface {
 // (OpenAI Responses API uses `previous_response_id` for this).
 type AIClient interface {
 	SendMessage(ctx context.Context, model, previousResponseID, userInput string) (AIReply, error)
+	GenerateImage(ctx context.Context, req ImageRequest) (ImageReply, error)
 }
 
 type AIReply struct {
 	ResponseID string
 	Output     string
+}
+
+type ImageRequest struct {
+	Model   string
+	Prompt  string
+	Size    string
+	Quality string
+}
+
+type ImageReply struct {
+	B64JSON string
+	URL     string
 }

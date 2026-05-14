@@ -8,7 +8,7 @@ import (
 	"github.com/udevs/ai-chat/internal/interfaces/http/handler"
 )
 
-func New(messages *handler.MessageHandler, chats *handler.ChatHandler) *gin.Engine {
+func New(messages *handler.MessageHandler, chats *handler.ChatHandler, images *handler.ImageHandler) *gin.Engine {
 	r := gin.Default()
 
 	r.GET("/healthz", func(c *gin.Context) { c.JSON(200, gin.H{"status": "ok"}) })
@@ -29,6 +29,9 @@ func New(messages *handler.MessageHandler, chats *handler.ChatHandler) *gin.Engi
 		ch.GET("/:id", chats.Get)
 		ch.GET("/:id/messages", messages.ListByChatID)
 		ch.POST("/:id/messages", chats.Send)
+
+		img := v1.Group("/images")
+		img.POST("/generate", images.Generate)
 	}
 
 	return r

@@ -18,6 +18,7 @@ import (
 
 	_ "github.com/udevs/ai-chat/docs"
 	appchat "github.com/udevs/ai-chat/internal/application/chat"
+	appimage "github.com/udevs/ai-chat/internal/application/image"
 	appmsg "github.com/udevs/ai-chat/internal/application/message"
 	"github.com/udevs/ai-chat/internal/infrastructure/config"
 	"github.com/udevs/ai-chat/internal/infrastructure/openai"
@@ -54,7 +55,16 @@ func main() {
 	chatSvc := appchat.NewService(chatRepo, msgRepo, aiClient, cfg.OpenAIModel)
 	chatHandler := handler.NewChatHandler(chatSvc)
 
-	r := router.New(msgHandler, chatHandler)
+	// Use a separate API key for image generation if provided.
+	imageAPIKey := cfg.OpenAIImageAPIKey
+	if imageAPIKey == "" {
+		imageAPIKey = cfg.OpenAIAPIKey
+	}
+	imageAIClient := openai.New(imageAPIKey)
+	imageSvc := appimage.NewService(imageAIClient, cfg.OpenAIImageModel)
+	imageHandler := handler.NewImageHandler(imageSvc)
+
+	r := router.New(msgHandler, chatHandler, imageHandler)
 
 	srv := &http.Server{
 		Addr:              ":" + cfg.HTTPPort,

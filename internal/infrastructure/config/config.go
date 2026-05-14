@@ -8,10 +8,12 @@ import (
 )
 
 type Config struct {
-	HTTPPort     string `envconfig:"HTTP_PORT" default:"8080"`
-	PostgresURL  string `envconfig:"POSTGRES_URL" required:"true"`
-	OpenAIAPIKey string `envconfig:"OPENAI_API_KEY" required:"true"`
-	OpenAIModel  string `envconfig:"OPENAI_MODEL" default:"gpt-4o-mini"`
+	HTTPPort         string `envconfig:"HTTP_PORT" default:"8080"`
+	PostgresURL      string `envconfig:"POSTGRES_URL" required:"true"`
+	OpenAIAPIKey     string `envconfig:"OPENAI_API_KEY" required:"true"`
+	OpenAIModel      string `envconfig:"OPENAI_MODEL" default:"gpt-4o-mini"`
+	OpenAIImageAPIKey string `envconfig:"GPT_IMAGE_1"`
+	OpenAIImageModel string `envconfig:"OPENAI_IMAGE_MODEL" default:"gpt-image-1"`
 }
 
 func Load() (Config, error) {
@@ -29,6 +31,9 @@ func Load() (Config, error) {
 	}
 	if strings.TrimSpace(c.OpenAIModel) == "" {
 		c.OpenAIModel = "gpt-4o-mini"
+	}
+	if strings.TrimSpace(c.OpenAIImageModel) == "" {
+		c.OpenAIImageModel = "gpt-image-1"
 	}
 	return c, nil
 }

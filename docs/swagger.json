@@ -257,6 +257,52 @@
                 }
             }
         },
+        "/v1/images/generate": {
+            "post": {
+                "description": "Generates one image from a text prompt using the configured OpenAI image model.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "images"
+                ],
+                "summary": "Generate an image",
+                "parameters": [
+                    {
+                        "description": "Image prompt",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.GenerateImageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.GenerateImageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/messages": {
             "get": {
                 "produces": [
@@ -556,6 +602,44 @@
             "type": "object",
             "properties": {
                 "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_udevs_ai-chat_internal_interfaces_http_dto.GenerateImageRequest": {
+            "type": "object",
+            "required": [
+                "prompt"
+            ],
+            "properties": {
+                "model": {
+                    "type": "string",
+                    "example": "gpt-image-1"
+                },
+                "prompt": {
+                    "type": "string",
+                    "example": "A friendly robot reading a book, watercolor style"
+                },
+                "quality": {
+                    "type": "string",
+                    "example": "auto"
+                },
+                "size": {
+                    "type": "string",
+                    "example": "1024x1024"
+                }
+            }
+        },
+        "github_com_udevs_ai-chat_internal_interfaces_http_dto.GenerateImageResponse": {
+            "type": "object",
+            "properties": {
+                "b64_json": {
+                    "type": "string"
+                },
+                "data_url": {
+                    "type": "string"
+                },
+                "url": {
                     "type": "string"
                 }
             }
