@@ -16,6 +16,43 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/v1/chats": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "chats"
+                ],
+                "summary": "List chats",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page size (1-200, default 50)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page offset (default 0)",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ListChatsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Allocates a chat with its own conversation state (server-side, via OpenAI Responses API).",
                 "consumes": [
@@ -108,6 +145,56 @@ const docTemplate = `{
             }
         },
         "/v1/chats/{id}/messages": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "chats"
+                ],
+                "summary": "List messages for a chat",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Chat ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (1-200, default 50)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page offset (default 0)",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ListMessagesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Appends a user turn to the chat. The previous response_id is sent to OpenAI so the model has full conversation context.",
                 "consumes": [
@@ -475,6 +562,17 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_udevs_ai-chat_internal_interfaces_http_dto.ListChatsResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ChatResponse"
+                    }
+                }
+            }
+        },
         "github_com_udevs_ai-chat_internal_interfaces_http_dto.ListMessagesResponse": {
             "type": "object",
             "properties": {
@@ -521,6 +619,9 @@ const docTemplate = `{
                 "input": {
                     "type": "string",
                     "example": "hello, who are you?"
+                },
+                "sender_id": {
+                    "type": "string"
                 }
             }
         },

@@ -43,6 +43,13 @@ definitions:
       error:
         type: string
     type: object
+  github_com_udevs_ai-chat_internal_interfaces_http_dto.ListChatsResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ChatResponse'
+        type: array
+    type: object
   github_com_udevs_ai-chat_internal_interfaces_http_dto.ListMessagesResponse:
     properties:
       items:
@@ -72,6 +79,8 @@ definitions:
       input:
         example: hello, who are you?
         type: string
+      sender_id:
+        type: string
     required:
     - input
     type: object
@@ -100,6 +109,30 @@ info:
   version: "1.0"
 paths:
   /v1/chats:
+    get:
+      parameters:
+      - description: Page size (1-200, default 50)
+        in: query
+        name: limit
+        type: integer
+      - description: Page offset (default 0)
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ListChatsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse'
+      summary: List chats
+      tags:
+      - chats
     post:
       consumes:
       - application/json
@@ -161,6 +194,39 @@ paths:
       tags:
       - chats
   /v1/chats/{id}/messages:
+    get:
+      parameters:
+      - description: Chat ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Page size (1-200, default 50)
+        in: query
+        name: limit
+        type: integer
+      - description: Page offset (default 0)
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ListMessagesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_udevs_ai-chat_internal_interfaces_http_dto.ErrorResponse'
+      summary: List messages for a chat
+      tags:
+      - chats
     post:
       consumes:
       - application/json
