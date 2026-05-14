@@ -10,12 +10,14 @@ import (
 
 	domain "github.com/udevs/ai-chat/internal/domain/chat"
 	messagedomain "github.com/udevs/ai-chat/internal/domain/message"
+	appimage "github.com/udevs/ai-chat/internal/application/image"
 )
 
 type Service struct {
 	repo         domain.Repository
 	messages     messagedomain.Repository
 	ai           domain.AIClient
+	imageSvc     *appimage.Service
 	defaultModel string
 }
 
@@ -24,8 +26,8 @@ var (
 	DefaultAssistantSenderID = uuid.MustParse("00000000-0000-0000-0000-000000000002")
 )
 
-func NewService(repo domain.Repository, messages messagedomain.Repository, ai domain.AIClient, defaultModel string) *Service {
-	return &Service{repo: repo, messages: messages, ai: ai, defaultModel: defaultModel}
+func NewService(repo domain.Repository, messages messagedomain.Repository, ai domain.AIClient, imageSvc *appimage.Service, defaultModel string) *Service {
+	return &Service{repo: repo, messages: messages, ai: ai, imageSvc: imageSvc, defaultModel: defaultModel}
 }
 
 type CreateInput struct {
@@ -95,19 +97,39 @@ func (s *Service) Send(ctx context.Context, chatID uuid.UUID, in SendInput) (Sen
 	if c.LastResponseID != nil {
 		prev = *c.LastResponseID
 	}
-	reply, err := s.ai.SendMessage(ctx, c.Model, prev, userInput)
+	
+	aiInput := userInput + "\n\n(System instructions: If the user explicitly asks you to generate or draw an image, reply EXACTLY with '$$IMAGE_REQ$$: <english prompt for the image>' and nothing else. If they do not ask for an image, just converse normally.)"
+	reply, err := s.ai.SendMessage(ctx, c.Model, prev, aiInput)
 	if err != nil {
 		return SendOutput{}, err
 	}
+
+	replyOutput := reply.Output
+	if strings.HasPrefix(replyOutput, "$$IMAGE_REQ$$:") {
+		prompt := strings.TrimSpace(strings.TrimPrefix(replyOutput, "$$IMAGE_REQ$$:"))
+		out, err := s.imageSvc.Generate(ctx, appimage.GenerateInput{
+			Prompt:  prompt,
+			Quality: "low",
+		})
+		if err == nil && out.B64JSON != "" {
+			replyOutput = "![Generated Image](data:image/png;base64," + out.B64JSON + ")"
+		} else {
+			replyOutput = "Kechirasiz, rasmni generatsiya qilishda xatolik yuz berdi."
+			if err != nil {
+				replyOutput += " " + err.Error()
+			}
+		}
+	}
+
 	updated, err := s.repo.UpdateResponseID(ctx, c.ID, reply.ResponseID)
 	if err != nil {
 		// AI call succeeded; surface the reply but report persistence error.
-		return SendOutput{Chat: c, Reply: reply.Output}, err
+		return SendOutput{Chat: c, Reply: replyOutput}, err
 	}
-	if err := s.storeTurn(ctx, c.ID, DefaultAssistantSenderID, "assistant", reply.Output); err != nil {
-		return SendOutput{Chat: updated, Reply: reply.Output}, err
+	if err := s.storeTurn(ctx, c.ID, DefaultAssistantSenderID, "assistant", replyOutput); err != nil {
+		return SendOutput{Chat: updated, Reply: replyOutput}, err
 	}
-	return SendOutput{Chat: updated, Reply: reply.Output}, nil
+	return SendOutput{Chat: updated, Reply: replyOutput}, nil
 }
 
 func (s *Service) storeTurn(ctx context.Context, chatID, senderID uuid.UUID, role, content string) error {

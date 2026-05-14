@@ -50,11 +50,6 @@ func main() {
 	msgSvc := appmsg.NewService(msgRepo)
 	msgHandler := handler.NewMessageHandler(msgSvc)
 
-	chatRepo := postgres.NewChatRepository(pool)
-	aiClient := openai.New(cfg.OpenAIAPIKey)
-	chatSvc := appchat.NewService(chatRepo, msgRepo, aiClient, cfg.OpenAIModel)
-	chatHandler := handler.NewChatHandler(chatSvc)
-
 	// Use a separate API key for image generation if provided.
 	imageAPIKey := cfg.OpenAIImageAPIKey
 	if imageAPIKey == "" {
@@ -62,6 +57,12 @@ func main() {
 	}
 	imageAIClient := openai.New(imageAPIKey)
 	imageSvc := appimage.NewService(imageAIClient, cfg.OpenAIImageModel)
+
+	chatRepo := postgres.NewChatRepository(pool)
+	aiClient := openai.New(cfg.OpenAIAPIKey)
+	chatSvc := appchat.NewService(chatRepo, msgRepo, aiClient, imageSvc, cfg.OpenAIModel)
+	chatHandler := handler.NewChatHandler(chatSvc)
+
 	imageHandler := handler.NewImageHandler(imageSvc)
 
 	r := router.New(msgHandler, chatHandler, imageHandler)
