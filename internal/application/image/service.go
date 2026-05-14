@@ -42,8 +42,8 @@ func (s *Service) Generate(ctx context.Context, in GenerateInput) (GenerateOutpu
 		size = "1024x1024"
 	}
 	quality := strings.TrimSpace(in.Quality)
-	if quality == "" {
-		quality = "auto"
+	if quality == "" || quality == "auto" {
+		quality = "low"
 	}
 
 	reply, err := s.ai.GenerateImage(ctx, domain.ImageRequest{
