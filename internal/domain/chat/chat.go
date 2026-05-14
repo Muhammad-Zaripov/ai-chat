@@ -25,6 +25,7 @@ type Chat struct {
 type Repository interface {
 	Create(ctx context.Context, c *Chat) (*Chat, error)
 	Get(ctx context.Context, id uuid.UUID) (*Chat, error)
+	List(ctx context.Context, limit, offset int32) ([]*Chat, error)
 	UpdateResponseID(ctx context.Context, id uuid.UUID, responseID string) (*Chat, error)
 }
 

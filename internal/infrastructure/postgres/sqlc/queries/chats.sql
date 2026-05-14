@@ -8,6 +8,12 @@ SELECT id, title, model, last_response_id, created_at, updated_at
 FROM chats
 WHERE id = $1;
 
+-- name: ListChats :many
+SELECT id, title, model, last_response_id, created_at, updated_at
+FROM chats
+ORDER BY updated_at DESC, created_at DESC, id DESC
+LIMIT $1 OFFSET $2;
+
 -- name: UpdateChatResponseID :one
 UPDATE chats
 SET last_response_id = $2,

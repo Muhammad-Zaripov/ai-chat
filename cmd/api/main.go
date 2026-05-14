@@ -51,7 +51,7 @@ func main() {
 
 	chatRepo := postgres.NewChatRepository(pool)
 	aiClient := openai.New(cfg.OpenAIAPIKey)
-	chatSvc := appchat.NewService(chatRepo, aiClient, cfg.OpenAIModel)
+	chatSvc := appchat.NewService(chatRepo, msgRepo, aiClient, cfg.OpenAIModel)
 	chatHandler := handler.NewChatHandler(chatSvc)
 
 	r := router.New(msgHandler, chatHandler)

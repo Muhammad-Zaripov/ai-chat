@@ -14,7 +14,8 @@ type CreateChatRequest struct {
 }
 
 type SendMessageRequest struct {
-	Input string `json:"input" binding:"required" example:"hello, who are you?"`
+	Input    string     `json:"input" binding:"required" example:"hello, who are you?"`
+	SenderID *uuid.UUID `json:"sender_id,omitempty"`
 }
 
 type ChatResponse struct {
@@ -31,6 +32,10 @@ type SendMessageResponse struct {
 	Reply string       `json:"reply"`
 }
 
+type ListChatsResponse struct {
+	Items []ChatResponse `json:"items"`
+}
+
 func ChatFromDomain(c *domain.Chat) ChatResponse {
 	return ChatResponse{
 		ID:             c.ID,
@@ -40,4 +45,12 @@ func ChatFromDomain(c *domain.Chat) ChatResponse {
 		CreatedAt:      c.CreatedAt,
 		UpdatedAt:      c.UpdatedAt,
 	}
+}
+
+func ChatsFromDomain(items []*domain.Chat) []ChatResponse {
+	out := make([]ChatResponse, 0, len(items))
+	for _, c := range items {
+		out = append(out, ChatFromDomain(c))
+	}
+	return out
 }

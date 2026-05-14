@@ -1,0 +1,5 @@
+ALTER TABLE messages
+ADD CONSTRAINT fk_messages_chat_id
+FOREIGN KEY (chat_id) REFERENCES chats (id)
+ON DELETE CASCADE
+NOT VALID;

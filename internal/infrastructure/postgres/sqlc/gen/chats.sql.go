@@ -66,6 +66,45 @@ func (q *Queries) GetChat(ctx context.Context, id uuid.UUID) (Chat, error) {
 	return i, err
 }
 
+const listChats = `-- name: ListChats :many
+SELECT id, title, model, last_response_id, created_at, updated_at
+FROM chats
+ORDER BY updated_at DESC, created_at DESC, id DESC
+LIMIT $1 OFFSET $2
+`
+
+type ListChatsParams struct {
+	Limit  int32
+	Offset int32
+}
+
+func (q *Queries) ListChats(ctx context.Context, arg ListChatsParams) ([]Chat, error) {
+	rows, err := q.db.Query(ctx, listChats, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Chat{}
+	for rows.Next() {
+		var i Chat
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Model,
+			&i.LastResponseID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateChatResponseID = `-- name: UpdateChatResponseID :one
 UPDATE chats
 SET last_response_id = $2,

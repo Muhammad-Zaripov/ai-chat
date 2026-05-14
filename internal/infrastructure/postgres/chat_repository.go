@@ -46,6 +46,21 @@ func (r *ChatRepository) Get(ctx context.Context, id uuid.UUID) (*domain.Chat, e
 	return chatToDomain(row), nil
 }
 
+func (r *ChatRepository) List(ctx context.Context, limit, offset int32) ([]*domain.Chat, error) {
+	rows, err := r.q.ListChats(ctx, sqlcgen.ListChatsParams{
+		Limit:  limit,
+		Offset: offset,
+	})
+	if err != nil {
+		return nil, err
+	}
+	out := make([]*domain.Chat, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, chatToDomain(row))
+	}
+	return out, nil
+}
+
 func (r *ChatRepository) UpdateResponseID(ctx context.Context, id uuid.UUID, responseID string) (*domain.Chat, error) {
 	row, err := r.q.UpdateChatResponseID(ctx, sqlcgen.UpdateChatResponseIDParams{
 		ID:             id,

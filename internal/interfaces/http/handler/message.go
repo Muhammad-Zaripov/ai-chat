@@ -106,6 +106,38 @@ func (h *MessageHandler) ListByChat(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ListMessagesResponse{Items: dto.FromDomainList(items)})
 }
 
+// ListByChatID godoc
+// @Summary      List messages for a chat
+// @Tags         chats
+// @Produce      json
+// @Param        id      path      string  true   "Chat ID (UUID)"
+// @Param        limit   query     int     false  "Page size (1-200, default 50)"
+// @Param        offset  query     int     false  "Page offset (default 0)"
+// @Success      200     {object}  dto.ListMessagesResponse
+// @Failure      400     {object}  dto.ErrorResponse
+// @Failure      500     {object}  dto.ErrorResponse
+// @Router       /v1/chats/{id}/messages [get]
+func (h *MessageHandler) ListByChatID(c *gin.Context) {
+	chatID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+	limit, _ := strconv.ParseInt(c.DefaultQuery("limit", "50"), 10, 32)
+	offset, _ := strconv.ParseInt(c.DefaultQuery("offset", "0"), 10, 32)
+
+	items, err := h.svc.ListByChat(c.Request.Context(), appmsg.ListInput{
+		ChatID: chatID,
+		Limit:  int32(limit),
+		Offset: int32(offset),
+	})
+	if err != nil {
+		writeError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, dto.ListMessagesResponse{Items: dto.FromDomainList(items)})
+}
+
 // Update godoc
 // @Summary      Update a message body
 // @Tags         messages

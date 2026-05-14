@@ -25,7 +25,9 @@ func New(messages *handler.MessageHandler, chats *handler.ChatHandler) *gin.Engi
 
 		ch := v1.Group("/chats")
 		ch.POST("", chats.Create)
+		ch.GET("", chats.List)
 		ch.GET("/:id", chats.Get)
+		ch.GET("/:id/messages", messages.ListByChatID)
 		ch.POST("/:id/messages", chats.Send)
 	}
 

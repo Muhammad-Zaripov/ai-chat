@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -45,6 +46,27 @@ func (h *ChatHandler) Create(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusCreated, dto.ChatFromDomain(out))
+}
+
+// List godoc
+// @Summary      List chats
+// @Tags         chats
+// @Produce      json
+// @Param        limit   query     int  false  "Page size (1-200, default 50)"
+// @Param        offset  query     int  false  "Page offset (default 0)"
+// @Success      200     {object}  dto.ListChatsResponse
+// @Failure      500     {object}  dto.ErrorResponse
+// @Router       /v1/chats [get]
+func (h *ChatHandler) List(c *gin.Context) {
+	limit, _ := strconv.ParseInt(c.DefaultQuery("limit", "50"), 10, 32)
+	offset, _ := strconv.ParseInt(c.DefaultQuery("offset", "0"), 10, 32)
+
+	items, err := h.svc.List(c.Request.Context(), int32(limit), int32(offset))
+	if err != nil {
+		writeChatError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, dto.ListChatsResponse{Items: dto.ChatsFromDomain(items)})
 }
 
 // Get godoc
@@ -97,7 +119,14 @@ func (h *ChatHandler) Send(c *gin.Context) {
 		return
 	}
 
-	out, err := h.svc.Send(c.Request.Context(), id, req.Input)
+	senderID := uuid.Nil
+	if req.SenderID != nil {
+		senderID = *req.SenderID
+	}
+	out, err := h.svc.Send(c.Request.Context(), id, appchat.SendInput{
+		Input:    req.Input,
+		SenderID: senderID,
+	})
 	if err != nil {
 		writeChatError(c, err)
 		return
