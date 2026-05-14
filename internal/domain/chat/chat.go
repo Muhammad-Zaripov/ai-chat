@@ -27,6 +27,8 @@ type Repository interface {
 	Get(ctx context.Context, id uuid.UUID) (*Chat, error)
 	List(ctx context.Context, limit, offset int32) ([]*Chat, error)
 	UpdateResponseID(ctx context.Context, id uuid.UUID, responseID string) (*Chat, error)
+	Delete(ctx context.Context, id uuid.UUID) error
+	DeleteAll(ctx context.Context) error
 }
 
 // AIClient sends a user turn to the LLM. previousResponseID is the

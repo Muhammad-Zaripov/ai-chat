@@ -137,6 +137,42 @@ func (h *ChatHandler) Send(c *gin.Context) {
 	})
 }
 
+// Delete godoc
+// @Summary      Delete a chat
+// @Tags         chats
+// @Param        id   path      string  true  "Chat ID (UUID)"
+// @Success      204
+// @Failure      400  {object}  dto.ErrorResponse
+// @Failure      404  {object}  dto.ErrorResponse
+// @Failure      500  {object}  dto.ErrorResponse
+// @Router       /v1/chats/{id} [delete]
+func (h *ChatHandler) Delete(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "invalid id"})
+		return
+	}
+	if err := h.svc.Delete(c.Request.Context(), id); err != nil {
+		writeChatError(c, err)
+		return
+	}
+	c.Status(http.StatusNoContent)
+}
+
+// DeleteAll godoc
+// @Summary      Delete all chats
+// @Tags         chats
+// @Success      204
+// @Failure      500  {object}  dto.ErrorResponse
+// @Router       /v1/chats [delete]
+func (h *ChatHandler) DeleteAll(c *gin.Context) {
+	if err := h.svc.DeleteAll(c.Request.Context()); err != nil {
+		writeChatError(c, err)
+		return
+	}
+	c.Status(http.StatusNoContent)
+}
+
 func writeChatError(c *gin.Context, err error) {
 	switch {
 	case errors.Is(err, domain.ErrNotFound):

@@ -20,3 +20,9 @@ SET last_response_id = $2,
     updated_at       = $3
 WHERE id = $1
 RETURNING id, title, model, last_response_id, created_at, updated_at;
+
+-- name: DeleteChat :exec
+DELETE FROM chats WHERE id = $1;
+
+-- name: DeleteAllChats :exec
+DELETE FROM chats;

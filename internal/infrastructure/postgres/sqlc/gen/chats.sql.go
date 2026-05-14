@@ -132,3 +132,21 @@ func (q *Queries) UpdateChatResponseID(ctx context.Context, arg UpdateChatRespon
 	)
 	return i, err
 }
+
+const deleteChat = `-- name: DeleteChat :exec
+DELETE FROM chats WHERE id = $1
+`
+
+func (q *Queries) DeleteChat(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteChat, id)
+	return err
+}
+
+const deleteAllChats = `-- name: DeleteAllChats :exec
+DELETE FROM chats
+`
+
+func (q *Queries) DeleteAllChats(ctx context.Context) error {
+	_, err := q.db.Exec(ctx, deleteAllChats)
+	return err
+}

@@ -29,6 +29,8 @@ func New(messages *handler.MessageHandler, chats *handler.ChatHandler, images *h
 		ch.GET("/:id", chats.Get)
 		ch.GET("/:id/messages", messages.ListByChatID)
 		ch.POST("/:id/messages", chats.Send)
+		ch.DELETE("", chats.DeleteAll)
+		ch.DELETE("/:id", chats.Delete)
 
 		img := v1.Group("/images")
 		img.POST("/generate", images.Generate)

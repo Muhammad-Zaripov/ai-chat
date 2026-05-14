@@ -151,3 +151,14 @@ func (s *Service) storeTurn(ctx context.Context, chatID, senderID uuid.UUID, rol
 	})
 	return err
 }
+
+func (s *Service) Delete(ctx context.Context, id uuid.UUID) error {
+	if id == uuid.Nil {
+		return domain.ErrNotFound
+	}
+	return s.repo.Delete(ctx, id)
+}
+
+func (s *Service) DeleteAll(ctx context.Context) error {
+	return s.repo.DeleteAll(ctx)
+}

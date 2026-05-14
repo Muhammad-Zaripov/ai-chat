@@ -86,3 +86,11 @@ func chatToDomain(row sqlcgen.Chat) *domain.Chat {
 		UpdatedAt:      row.UpdatedAt,
 	}
 }
+
+func (r *ChatRepository) Delete(ctx context.Context, id uuid.UUID) error {
+	return r.q.DeleteChat(ctx, id)
+}
+
+func (r *ChatRepository) DeleteAll(ctx context.Context) error {
+	return r.q.DeleteAllChats(ctx)
+}
